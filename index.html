@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calorie Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">🍎</div>
+    <div class="quote">
+      <marquee behavior="scroll" direction="left">
+        "Stay strong, eat healthy, and keep moving forward!"
+      </marquee>
+    </div>
+    <div class="profile">
+      <img src="profile.png" alt="Profile" id="profilePic">
+      <div class="dropdown" id="profileMenu">
+        <a href="#">Dashboard</a>
+        <a href="#">Settings</a>
+        <a href="#">Logout</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Target / Consumed / Remaining -->
+  <section class="status-bar">
+    <div class="target">
+      <button onclick="changeTarget(-100)">-100</button>
+      <input type="number" id="dailyTarget" value="5000">
+      <button onclick="changeTarget(100)">+100</button> kcal
+    </div>
+    <div class="consumed">
+      Consumed: <span id="consumed">0</span> kcal
+    </div>
+    <div class="remaining">
+      Remaining: <span id="remaining">5000</span> kcal
+    </div>
+  </section>
+
+  <!-- Progress Bar -->
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <!-- Food Items Table -->
+  <section class="food-section">
+    <h2>Food Items</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>S.No</th>
+          <th>Item Name</th>
+          <th>Unit</th>
+          <th>Calories</th>
+          <th>Quantity</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody id="foodTable">
+        <!-- Rows inserted by JS -->
+      </tbody>
+    </table>
+    <button id="addItemBtn">+ Add Item</button>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
