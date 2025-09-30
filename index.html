@@ -7,63 +7,58 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
   <!-- Header -->
   <header class="header">
-    <div class="logo">🍎</div>
-    <div class="quote">
-      <marquee behavior="scroll" direction="left">
-        "Stay strong, eat healthy, and keep moving forward!"
-      </marquee>
-    </div>
+    <div class="logo">🍏</div>
+    <marquee class="quote">"Push yourself, because no one else is going to do it for you."</marquee>
     <div class="profile">
-      <img src="profile.png" alt="Profile" id="profilePic">
-      <div class="dropdown" id="profileMenu">
+      <img src="profile.png" alt="Profile" class="profile-pic">
+      <div class="dropdown">
+        <p><strong>Name:</strong> Balram Gupta</p>
+        <p><strong>Email:</strong> balrambabu070@gmail.com</p>
         <a href="#">Dashboard</a>
         <a href="#">Settings</a>
-        <a href="#">Logout</a>
       </div>
     </div>
   </header>
 
-  <!-- Target / Consumed / Remaining -->
-  <section class="status-bar">
-    <div class="target">
-      <button onclick="changeTarget(-100)">-100</button>
-      <input type="number" id="dailyTarget" value="5000">
-      <button onclick="changeTarget(100)">+100</button> kcal
+  <!-- Daily Calories -->
+  <section class="summary">
+    <div class="box">
+      <p>Target</p>
+      <input type="number" id="targetCalories" value="5000">
     </div>
-    <div class="consumed">
-      Consumed: <span id="consumed">0</span> kcal
+    <div class="box">
+      <p>Consumed</p>
+      <span id="consumedCalories">0</span>
     </div>
-    <div class="remaining">
-      Remaining: <span id="remaining">5000</span> kcal
+    <div class="box">
+      <p>Remaining</p>
+      <span id="remainingCalories">5000</span>
     </div>
   </section>
-
-  <!-- Progress Bar -->
-  <div class="progress-container">
-    <div class="progress-bar" id="progressBar"></div>
+  <div class="progress-bar">
+    <div id="progress"></div>
   </div>
 
-  <!-- Food Items Table -->
-  <section class="food-section">
-    <h2>Food Items</h2>
-    <table>
+  <!-- Food Table -->
+  <section class="table-section">
+    <table id="foodTable">
       <thead>
         <tr>
-          <th>S.No</th>
-          <th>Item Name</th>
+          <th>Item</th>
+          <th>Calories/Unit</th>
           <th>Unit</th>
-          <th>Calories</th>
           <th>Quantity</th>
           <th>Total</th>
         </tr>
       </thead>
-      <tbody id="foodTable">
-        <!-- Rows inserted by JS -->
+      <tbody>
+        <!-- Default items inserted via JS -->
       </tbody>
     </table>
-    <button id="addItemBtn">+ Add Item</button>
+    <button id="addItemBtn">➕ Add Item</button>
   </section>
 
   <script src="script.js"></script>

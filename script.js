@@ -1,94 +1,130 @@
-let dailyTarget = 5000;
-let consumed = 0;
-
-const defaultFoods = [
-  { name: "Roti", unit: "1 piece", calories: 80 },
-  { name: "Rice", unit: "1 bowl", calories: 200 },
-  { name: "Milk", unit: "250ml", calories: 150 },
-  { name: "Egg", unit: "1 piece", calories: 70 },
-  { name: "Chhena", unit: "100g", calories: 265 },
-  { name: "Paneer", unit: "100g", calories: 300 },
-  { name: "Sprouts", unit: "1 bowl", calories: 120 },
-  { name: "Potato", unit: "1 medium", calories: 110 },
-  { name: "Paratha", unit: "1 piece", calories: 180 },
-  { name: "Banana", unit: "1 piece", calories: 100 }
+// Default food items
+const defaultItems = [
+  { name: "Roti", calories: 120, unit: "1 pc" },
+  { name: "Rice", calories: 200, unit: "1 bowl" },
+  { name: "Milk", calories: 150, unit: "250 ml" },
+  { name: "Egg", calories: 70, unit: "1 pc" },
+  { name: "Chhena", calories: 250, unit: "100 g" },
+  { name: "Sprouts", calories: 100, unit: "1 bowl" },
+  { name: "Potato", calories: 130, unit: "1 pc" },
+  { name: "Paneer", calories: 300, unit: "100 g" },
+  { name: "Paratha", calories: 220, unit: "1 pc" },
+  { name: "Banana", calories: 100, unit: "1 pc" }
 ];
 
-let foods = [];
+let foodItems = [];
+let consumed = 0;
+let target = 5000;
 
+// --- Local Storage Keys ---
+const STORAGE_KEY = "calorieTrackerData";
+const DATE_KEY = "calorieTrackerDate";
+
+// --- Get Today’s Date (12 AM – 12 PM cycle) ---
+function getTodayKey() {
+  const now = new Date();
+  // Format: YYYY-MM-DD
+  return now.toISOString().slice(0, 10);
+}
+
+// --- Load Saved Data ---
+function loadData() {
+  const savedDate = localStorage.getItem(DATE_KEY);
+  const today = getTodayKey();
+
+  if (savedDate !== today) {
+    // New day → reset data
+    localStorage.setItem(DATE_KEY, today);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ items: defaultItems, target: 5000 }));
+    return { items: defaultItems, target: 5000 };
+  }
+
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    return JSON.parse(saved);
+  }
+  return { items: defaultItems, target: 5000 };
+}
+
+// --- Save Data ---
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ items: foodItems, target }));
+  localStorage.setItem(DATE_KEY, getTodayKey());
+}
+
+// --- Render Food Table ---
 function renderTable() {
-  const table = document.getElementById("foodTable");
-  table.innerHTML = "";
-
-  foods.forEach((food, index) => {
-    const total = food.calories * food.qty;
-    const row = `
+  const tbody = document.querySelector("#foodTable tbody");
+  tbody.innerHTML = "";
+  foodItems.forEach((item, index) => {
+    item.qty = item.qty || 0;
+    let total = item.calories * item.qty;
+    tbody.innerHTML += `
       <tr>
-        <td>${index + 1}</td>
-        <td>${food.name}</td>
-        <td>${food.unit}</td>
-        <td>${food.calories}</td>
+        <td>${item.name}</td>
+        <td>${item.calories}</td>
+        <td>${item.unit}</td>
         <td>
-          <button class="quantity-btn" onclick="updateQty(${index}, -1)">-</button>
-          ${food.qty}
-          <button class="quantity-btn" onclick="updateQty(${index}, 1)">+</button>
+          <div class="qty-control">
+            <button onclick="updateQty(${index}, 1)">➕</button>
+            <span class="qty-number">${item.qty}</span>
+            <button onclick="updateQty(${index}, -1)">➖</button>
+          </div>
         </td>
         <td>${total}</td>
       </tr>
     `;
-    table.innerHTML += row;
   });
-
-  updateStats();
+  updateSummary();
 }
 
+// --- Update Quantity ---
 function updateQty(index, change) {
-  if (foods[index].qty + change >= 0) {
-    foods[index].qty += change;
+  if (foodItems[index].name === "Sprouts" && foodItems[index].qty >= 1 && change > 0) {
+    alert("Sprouts can only be taken once a day!");
+    return;
   }
+  foodItems[index].qty = Math.max(0, (foodItems[index].qty || 0) + change);
+  saveData();
   renderTable();
 }
 
-function updateStats() {
-  consumed = foods.reduce((sum, f) => sum + f.calories * f.qty, 0);
-  document.getElementById("consumed").innerText = consumed;
-  document.getElementById("remaining").innerText = dailyTarget - consumed;
+// --- Update Summary ---
+function updateSummary() {
+  consumed = foodItems.reduce((sum, item) => sum + (item.calories * item.qty), 0);
+  target = parseInt(document.getElementById("targetCalories").value) || 0;
+  let remaining = target - consumed;
 
-  const percent = Math.min((consumed / dailyTarget) * 100, 100);
-  document.getElementById("progressBar").style.width = percent + "%";
+  document.getElementById("consumedCalories").innerText = consumed;
+  document.getElementById("remainingCalories").innerText = remaining >= 0 ? remaining : 0;
+  document.getElementById("progress").style.width = `${Math.min((consumed / target) * 100, 100)}%`;
+
+  saveData();
 }
 
-function changeTarget(amount) {
-  dailyTarget = parseInt(document.getElementById("dailyTarget").value) + amount;
-  if (dailyTarget < 0) dailyTarget = 0;
-  document.getElementById("dailyTarget").value = dailyTarget;
-  updateStats();
-}
-
-document.getElementById("dailyTarget").addEventListener("input", (e) => {
-  dailyTarget = parseInt(e.target.value) || 0;
-  updateStats();
-});
-
+// --- Add New Item ---
 document.getElementById("addItemBtn").addEventListener("click", () => {
-  const name = prompt("Enter item name:");
-  const unit = prompt("Enter unit (e.g. 1 bowl, 100g, 1 piece):");
-  const calories = parseInt(prompt("Enter calories per unit:")) || 0;
-
-  if (name && unit && calories) {
-    foods.push({ name, unit, calories, qty: 0 });
+  let name = prompt("Enter item name:");
+  let cal = prompt("Enter calories per unit:");
+  let unit = prompt("Enter unit (e.g. 1 bowl, 100g, 250ml):");
+  if (name && cal) {
+    foodItems.push({ name, calories: parseInt(cal), unit, qty: 0 });
+    saveData();
     renderTable();
   }
 });
 
-// Profile dropdown
-document.getElementById("profilePic").addEventListener("click", () => {
-  document.getElementById("profileMenu").style.display =
-    document.getElementById("profileMenu").style.display === "block"
-      ? "none"
-      : "block";
+// --- Update target ---
+document.getElementById("targetCalories").addEventListener("input", () => {
+  target = parseInt(document.getElementById("targetCalories").value) || 0;
+  saveData();
+  updateSummary();
 });
 
-// Initialize
-foods = defaultFoods.map(f => ({ ...f, qty: 0 }));
+// --- On Load ---
+const savedData = loadData();
+foodItems = savedData.items;
+target = savedData.target;
+document.getElementById("targetCalories").value = target;
+
 renderTable();
